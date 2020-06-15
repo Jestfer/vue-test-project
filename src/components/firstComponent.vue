@@ -4,10 +4,10 @@
 
     <p>{{ message }}</p>
 
-    <v-card outlined max-width="344">
+    <v-card outlined max-width="344" class="centered">
       <v-card-title>This is an example joke</v-card-title>
       <v-card-subtitle>We hope you like it :)</v-card-subtitle>
-      <p>REPLACE FOR JOKE</p>
+      <p>{{ joke }}</p>
     </v-card>
 
     <br /><br />
@@ -22,11 +22,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { merge, Subject } from 'rxjs'
-import { map, startWith, scan } from 'rxjs/operators'
+import { map, startWith, scan, first } from 'rxjs/operators'
+import Axios from 'axios-observable'
 
 @Component
 export default class FirstComponent extends Vue {
   message = ''
+  joke = ''
   count = null as unknown
   plus$ = new Subject()
   minus$ = new Subject()
@@ -45,8 +47,23 @@ export default class FirstComponent extends Vue {
         this.count = clicksCount
       }
     )
+
+    // TODO: this belongs in a service, added here for quick POC
+    Axios.get('https://icanhazdadjoke.com/', {
+      headers: {
+        Accept: 'application/json'
+      }
+    })
+      .pipe(first())
+      .subscribe(res => {
+        this.joke = res.data.joke
+      })
   }
 }
 </script>
 
-<style></style>
+<style>
+.centered {
+  margin: 0 auto;
+}
+</style>
